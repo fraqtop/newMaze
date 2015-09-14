@@ -16,21 +16,28 @@ namespace maze
         public int[] fexit = new int[2];
         public int[] fbeg = new int[2];
         public int points { get; private set; }
+        public StringBuilder answer = new StringBuilder();
         public mazefinder(string newpath)
         {
             fpath = newpath;
             points = 0;
             using (StreamReader sr = new StreamReader(fpath))
             {
+                string[] puta = File.ReadAllLines(fpath);
                 fdim[0] = File.ReadAllLines(fpath).Length;
-                string buf= sr.ReadLine();
-                fdim[1] = buf.Length;
+                fdim[1] = puta.OrderByDescending(x => x.Length).First().Length;
                 fmaze = new char[fdim[0], fdim[1]];
                 for (int k=0;k< fdim[0]; k++)
                 {
                     for (int l = 0; l < fdim[1]; l++)
-                        fmaze[k, l] = buf[l];
-                    buf = sr.ReadLine();
+                        try
+                        {
+                            fmaze[k, l] = puta[k][l];
+                        }
+                        catch
+                        {
+                            fmaze[k, l] = ' ';
+                        }
                 }
             }
         }
@@ -82,7 +89,7 @@ namespace maze
             move(fexit[0], fexit[1] + 1, 128);
             move(fexit[0] + 1, fexit[1], 128);
             move(fexit[0], fexit[1] - 1, 128);
-            short_way(first_step()[0], first_step()[1],(int)fmaze[first_step()[0],first_step()[1]]+1);
+            short_way(first_step()[0], first_step()[1],(int)fmaze[first_step()[0],first_step()[1]]+1,(char)first_step()[2]);
         }
 
         private void clean_maze ()
@@ -92,7 +99,7 @@ namespace maze
                     if (!"#xe*".Contains<char>(fmaze[i, j])) fmaze[i, j] = ' ';
         }
 
-        public void short_way(int i, int j, int val)
+        public void short_way(int i, int j, int val, char direct)
         {
             if (fmaze[i,j]=='e')
             {
@@ -101,18 +108,18 @@ namespace maze
             }
             if ((int)fmaze[i, j] - val == -1)
             {
-                fmaze[i, j] = 'x';
-                short_way(i - 1, j, val - 1);
-                short_way(i, j + 1, val - 1);
-                short_way(i, j - 1, val - 1);
-                short_way(i + 1, j, val - 1);
+                answer.Append(direct);
+                short_way(i - 1, j, val - 1, 'u');
+                short_way(i, j + 1, val - 1, 'r');
+                short_way(i, j - 1, val - 1, 'l');
+                short_way(i + 1, j, val - 1, 'd');
             }
 
         }
 
         private int[] first_step()
         {
-            int[] res = new int[2];
+            int[] res = new int[3];
             List<char> ways = new List<char>();
             ways.Add(fmaze[fbeg[0] - 1, fbeg[1]]);
             ways.Add(fmaze[fbeg[0], fbeg[1] + 1]);
@@ -128,21 +135,25 @@ namespace maze
             {
                 res[0] = fbeg[0] - 1;
                 res[1] = fbeg[1];
+                res[2] = (int)'u';
             }
             if (fmaze[fbeg[0] + 1, fbeg[1]] == puta)
             {
                 res[0] = fbeg[0] + 1;
                 res[1] = fbeg[1];
+                res[2] = (int)'d';
             }
             if (fmaze[fbeg[0], fbeg[1] + 1] == puta)
             {
                 res[0] = fbeg[0];
                 res[1] = fbeg[1] + 1;
+                res[2] = (int)'r';
             }
             if (fmaze[fbeg[0], fbeg[1] - 1] == puta)
             {
                 res[0] = fbeg[0];
                 res[1] = fbeg[1] - 1;
+                res[2] = (int)'l';
             }
             return res;
         }

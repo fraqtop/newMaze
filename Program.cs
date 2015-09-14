@@ -36,6 +36,7 @@ namespace maze
                 Console.WriteLine(e.Message);
             }
             demonstr(pth);
+            Console.WriteLine(pth.answer);
             Console.ReadKey();
         }
     }
