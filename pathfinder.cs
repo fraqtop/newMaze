@@ -9,39 +9,66 @@ namespace maze
 {
     public class mazefinder
     {
-        public char[,] fmaze { get; private set; }
-        public string fpath { get; set;}
-        public int[] fdim = new int[2];
-        public int[] fexit = new int[2];
-        public int[] fbeg = new int[2];
-        public int points { get; private set; }
-        public StringBuilder answer = new StringBuilder();
+        public char[,] fmaze { get; private set; } // Лабиринт
+        public string fpath { get; set;} // Путь к файлу
+        private int[] fexit { get; set; } // Индексы выхода из лабиринта
+        private int[] fbeg { get; set; } // Индексы начала лабиринта
+        public int fpoints { get; set; } // Набранные очки
+        private bool fl { get; set; } // Флаг, говорящий о том, можно ли достичь выхода
+        public StringBuilder answer = new StringBuilder(); // Траектория
+        private List<NeededCell> felems = new List<NeededCell>(); // Коллекция очковых ячеек, которые нужн посетить
         public mazefinder(string newpath)
         {
             fpath = newpath;
-            points = 0;
+            fpoints = 0;
+            fl = false;
             using (StreamReader sr = new StreamReader(fpath))
             {
+                int[] fdim = new int[2];
                 string[] puta = File.ReadAllLines(fpath);
                 fdim[0] = File.ReadAllLines(fpath).Length;
-                fdim[1] = puta.OrderByDescending(x => x.Length).First().Length;
+                fdim[1] = puta.OrderByDescending(x => x.Length).First().Length; // Определение размерности
                 fmaze = new char[fdim[0], fdim[1]];
                 for (int k=0;k< fdim[0]; k++)
                 {
                     for (int l = 0; l < fdim[1]; l++)
-                        try
+                    {
+                        try // try на случай, если лабиринт неправильной формы
                         {
                             fmaze[k, l] = puta[k][l];
                         }
                         catch
                         {
                             fmaze[k, l] = ' ';
+                            goto outofrange;
                         }
+                        if (puta[k][l] == '*')
+                        {
+                            fbeg = new int[2] { k, l };
+                        }
+                        if (puta[k][l] == 'e')
+                        {
+                            fexit = new int[2] { k, l };
+                        }
+                        if ((int)puta[k][l] > 48 && (int)puta[k][l] < 58)
+                        {
+                            felems.Add(new NeededCell(new int[2] { k, l }, (int)puta[k][l] - 48)); // Внесение нового элемента в список
+                        }
+                    outofrange:; // Метка для обхода ошибки
+                    }
                 }
             }
         }
 
-        private void move(int i, int j, int val)
+        public char finddirection (int i,int j)
+        {
+            if (fbeg[0] > i) return 'u';
+            if (fbeg[0] < i) return 'd';
+            if (fbeg[1] > j) return 'l';
+            return 'r';
+        }
+
+        private void move(int i, int j, int val) // Рекурсивная процедура расстановки цифр
         {
             switch (fmaze[i,j])
             {
@@ -54,116 +81,135 @@ namespace maze
                     break;
 
                 case 'e':
+                    fl = true;
+                    if (Math.Abs((i + j) - (fbeg[0] + fbeg[1])) == 1) // Если выход - соседняя ячейка
+                    {
+                        answer.Append(finddirection(i, j));
+                        fpoints = 20;
+                        throw new Exception("Exit is found"); // Исключение для выхода из рекурсии
+                    }
                     break;
 
                 case '*':
-                    fbeg[0] = i;
-                    fbeg[1] = j;
                     break;
 
                 default:
-                    if ((int)fmaze[i, j] > val && (int)fmaze[i, j] > 57)
-                    {
-                        fmaze[i, j] = Convert.ToChar(val);
-                        move(i - 1, j, val + 1);
-                        move(i, j + 1, val + 1);
-                        move(i + 1, j, val + 1);
-                        move(i, j - 1, val + 1);
-                    }
-                    if ((int)fmaze[i, j] > 48 && (int)fmaze[i, j] < 58)
-                    {
-                        points += (int)fmaze[i, j] - 48;
-                        fmaze[i, j] = ' ';
-                        move(i, j, val);
-                    }
+                    if ((int)fmaze[i, j] > val && (int)fmaze[i, j] > 128) goto case ' '; // Если найден более короткий путь до ячейки
                     break;
             }
         }
 
+        private void cleanmaze() // Очистка от коэффицентов и отработанных очков
+        {
+            fl = false;
+            for (int i = 0; i < fmaze.GetLength(0); i++)
+            {
+                for (int j = 0; j < fmaze.GetLength(1); j++)
+                {
+                    if (!"#e123456789".Contains<char>(fmaze[i, j]) || i==fbeg[0] & j==fbeg[1])
+                    {
+                        fmaze[i, j] = ' ';
+                    }
+                }
+            }
+        }
+
+
         public void pathfinder()
         {
-            fexit = FindExit();
+            List<NeededCell> bannedelems = new List<NeededCell>(); // Ячейки с очками, до которых пока что нельзя добраться
+            NeededCell shortest = null;
+            int stackcount;
+            int[] fst;
             if (fexit == null) throw new Exception("Exit is not found");
-            move(fexit[0] - 1, fexit[1], 128);
-            move(fexit[0], fexit[1] + 1, 128);
-            move(fexit[0] + 1, fexit[1], 128);
-            move(fexit[0], fexit[1] - 1, 128);
-            short_way(first_step()[0], first_step()[1],(int)fmaze[first_step()[0],first_step()[1]]+1,(char)first_step()[2]);
-        }
-
-        private void clean_maze ()
-        {
-            for (int i = 0; i < fdim[0]; i++)
-                for (int j = 0; j < fdim[1]; j++)
-                    if (!"#xe*".Contains<char>(fmaze[i, j])) fmaze[i, j] = ' ';
-        }
-
-        public void short_way(int i, int j, int val, char direct)
-        {
-            if (fmaze[i,j]=='e')
+            felems.Add(new NeededCell(new int[2] { 0, 0 }, 0)); //фиктивный элемент
+            while (felems.Count()!=0)
             {
-                clean_maze();
-                throw new Exception("the exit is found, take a look");
+                if (fl == false & felems.Count() == 1 & felems.First().flocation[0] == 0 & felems.First().flocation[1] == 0) // Если не найдено ни очков, ни выхода
+                    throw new Exception("Exit is found, but I cant reach it");
+                move(fbeg[0] - 1, fbeg[1], 128);
+                move(fbeg[0], fbeg[1] + 1, 128);
+                move(fbeg[0] + 1, fbeg[1], 128);
+                move(fbeg[0], fbeg[1] - 1, 128);
+                felems.AddRange(bannedelems); //Добавление недосягаемых ячеек для повторной проверки в новой иттерации
+                foreach (NeededCell ndc in felems)
+                {
+                    ndc.fway.Clear(); // Очистка стека
+                    try
+                    {
+                        fst = first_step(ndc.flocation[0], ndc.flocation[1]); //Найти наименьшую соседнюю ячейку
+                    }
+                    catch
+                    {
+                        goto bodo; //обойти ошибку
+                    }
+                        ndc.fvalforstep = (int)fmaze[fst[0], fst[1]] + 1;
+                    try
+                    {
+                        ndc.takemindist(this.fmaze, fst[0], fst[1], (char)fst[2], ndc.fvalforstep, fbeg); // найти наименьший путь
+                    }
+                    catch
+                    {}
+                bodo:;
+                }
+                bannedelems = felems.Where(x => x.fway.Count() == 0).ToList(); // Убрать недосягаемые элементы
+                if (bannedelems.Exists(x => x.fvalue == 0))
+                    bannedelems.Remove(bannedelems.Where(x => x.fvalue == 0).First()); // Убрать фиктивный элемент
+                felems = felems.Where(x => x.fway.Count() != 0).ToList();
+                if (!felems.Any())
+                {
+                    goto newiteration;
+                }
+                felems = felems.OrderBy(x => x.fway.Count()).ToList();
+                shortest = felems.First();
+                fbeg[0] = shortest.flocation[0];
+                fbeg[1] = shortest.flocation[1];
+                fpoints += shortest.fvalue;
+                stackcount = shortest.fway.Count();
+                for (int i = 0; i < stackcount; i++) answer.Append(shortest.fway.Pop()); //Запись траектории из стека
+                if (shortest.flocation == fexit) break;
+                felems.Remove(shortest);
+                newiteration:
+                if (!felems.Any()) felems.Add(new NeededCell(fexit, 20)); // Если нет досягаемых элементов искать выход
+                cleanmaze();
             }
-            if ((int)fmaze[i, j] - val == -1)
-            {
-                answer.Append(direct);
-                short_way(i - 1, j, val - 1, 'u');
-                short_way(i, j + 1, val - 1, 'r');
-                short_way(i, j - 1, val - 1, 'l');
-                short_way(i + 1, j, val - 1, 'd');
-            }
-
         }
 
-        private int[] first_step()
+        private int[] first_step(int i, int j)
         {
             int[] res = new int[3];
             List<char> ways = new List<char>();
-            ways.Add(fmaze[fbeg[0] - 1, fbeg[1]]);
-            ways.Add(fmaze[fbeg[0], fbeg[1] + 1]);
-            ways.Add(fmaze[fbeg[0] + 1, fbeg[1]]);
-            ways.Add(fmaze[fbeg[0], fbeg[1] - 1]);
+            ways.Add(fmaze[i - 1, j]);
+            ways.Add(fmaze[i, j + 1]);
+            ways.Add(fmaze[i + 1, j]);
+            ways.Add(fmaze[i, j - 1]);
+            ways = ways.Where(x => !"#e*".Contains(x) && (int)x != 32).ToList();
             char puta = ways.Min<char>();
-            while (puta == '#')
+            if (fmaze[i - 1, j] == puta)
             {
-                ways.Remove(puta);
-                puta = ways.Min<char>();
-            }
-            if (fmaze[fbeg[0] - 1, fbeg[1]]==puta)
-            {
-                res[0] = fbeg[0] - 1;
-                res[1] = fbeg[1];
+                res[0] = i - 1;
+                res[1] = j;
                 res[2] = (int)'u';
             }
-            if (fmaze[fbeg[0] + 1, fbeg[1]] == puta)
+            if (fmaze[i + 1, j] == puta)
             {
-                res[0] = fbeg[0] + 1;
-                res[1] = fbeg[1];
+                res[0] = i + 1;
+                res[1] = j;
                 res[2] = (int)'d';
             }
-            if (fmaze[fbeg[0], fbeg[1] + 1] == puta)
+            if (fmaze[i, j + 1] == puta)
             {
-                res[0] = fbeg[0];
-                res[1] = fbeg[1] + 1;
+                res[0] = i;
+                res[1] = j + 1;
                 res[2] = (int)'r';
             }
-            if (fmaze[fbeg[0], fbeg[1] - 1] == puta)
+            if (fmaze[i, j - 1] == puta)
             {
-                res[0] = fbeg[0];
-                res[1] = fbeg[1] - 1;
+                res[0] = i;
+                res[1] = j - 1;
                 res[2] = (int)'l';
             }
             return res;
-        }
-
-        private int[] FindExit()
-        {
-            for (int i = 0; i < fdim[0]; i++)
-                for (int j = 0; j < fdim[1]; j++)
-                    if (fmaze[i, j] == 'e' | fmaze[i, j] == 'E')
-                        return new int[2] { i, j };
-            return null;
         }
     }
 }

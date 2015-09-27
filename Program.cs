@@ -11,13 +11,13 @@ namespace maze
     {
         static public void demonstr(mazefinder mz)
         {
-            for (int i = 0; i < mz.fdim[0]; i++)
+            for (int i = 0; i < mz.fmaze.GetLength(0); i++)
             {
-                for (int j = 0; j < mz.fdim[1]; j++)
+                for (int j = 0; j < mz.fmaze.GetLength(1); j++)
                     Console.Write(mz.fmaze[i, j]);
                 Console.WriteLine();
             }
-            if (mz.points != 0) Console.WriteLine("You received " + mz.points.ToString()+" points");
+            if (mz.fpoints != 0) Console.WriteLine("You received " + mz.fpoints.ToString()+" points");
             Console.WriteLine("______________________");
         }
 
@@ -35,8 +35,8 @@ namespace maze
             {
                 Console.WriteLine(e.Message);
             }
-            demonstr(pth);
             Console.WriteLine(pth.answer);
+            Console.WriteLine("You recieve "+pth.fpoints+" points");
             Console.ReadKey();
         }
     }
