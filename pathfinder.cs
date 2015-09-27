@@ -134,7 +134,7 @@ namespace maze
                 felems.AddRange(bannedelems); //Добавление недосягаемых ячеек для повторной проверки в новой иттерации
                 foreach (NeededCell ndc in felems)
                 {
-                    ndc.fway.Clear(); // Очистка стека
+                    ndc.fway.Clear(); // Очистка стека.
                     try
                     {
                         fst = first_step(ndc.flocation[0], ndc.flocation[1]); //Найти наименьшую соседнюю ячейку
