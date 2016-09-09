@@ -1,7 +1,0 @@
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\bin\Debug\maze.exe.config
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\bin\Debug\maze.exe
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\bin\Debug\maze.pdb
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\obj\Debug\maze.csprojResolveAssemblyReference.cache
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\obj\Debug\maze.exe
-c:\users\ома\documents\visual studio 2015\Projects\maze\maze\obj\Debug\maze.pdb
-C:\Users\ома\documents\visual studio 2015\Projects\maze\maze\obj\Debug\maze.csproj.ResolveComReference.cache
