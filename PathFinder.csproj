@@ -52,6 +52,20 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="tests\labirint10+.txt" />
+    <Content Include="tests\labirint11-block.txt" />
+    <Content Include="tests\labirint12+.txt" />
+    <Content Include="tests\labirint13+.txt" />
+    <Content Include="tests\labirint14+.txt" />
+    <Content Include="tests\labirint15------.txt" />
+    <Content Include="tests\labirint2+.txt" />
+    <Content Include="tests\labirint3+.txt" />
+    <Content Include="tests\labirint4+.txt" />
+    <Content Include="tests\labirint5+.txt" />
+    <Content Include="tests\labirint6-block.txt" />
+    <Content Include="tests\labirint7-------.txt" />
+    <Content Include="tests\labirint8+.txt" />
+    <Content Include="tests\labirint9+.txt" />
     <Content Include="tests\maze1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

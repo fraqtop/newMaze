@@ -13,7 +13,7 @@ namespace PathFinder
         private Cell exitCell;
         private Cell entryCell;
         private List<Cell> points;
-        public string way;
+        private string way;
         public Maze(string mazepath)
         {
             this.way = string.Empty;
@@ -73,7 +73,6 @@ namespace PathFinder
         private void Locate(Cell cellPointer)
         {
             cellPointer.SetDistance(0);
-            this.Print(this.GetDistances());
         }
         public void FindBestWay()
         {
@@ -108,7 +107,13 @@ namespace PathFinder
         }
         private void SetWay(string part)
         {
-            way += part;
+            this.way += part;
+        }
+        public string GetWay()
+        {
+            if (this.way.Length == 0)
+                return "There is no way out";
+            return this.way;
         }
         private void ResetDistances()
         {
