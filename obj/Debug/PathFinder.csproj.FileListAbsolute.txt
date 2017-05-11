@@ -1,6 +1,0 @@
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\bin\Debug\PathFinder.exe.config
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\bin\Debug\PathFinder.exe
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\bin\Debug\PathFinder.pdb
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\obj\Debug\PathFinder.csprojResolveAssemblyReference.cache
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\obj\Debug\PathFinder.exe
-c:\users\economist\documents\visual studio 2015\Projects\PathFinder\PathFinder\obj\Debug\PathFinder.pdb
